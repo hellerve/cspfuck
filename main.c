@@ -9,7 +9,7 @@
 int err(const char* str, ...) {
   va_list ap;
   va_start(ap, str);
-  fprintf(stderr, str, ap);
+  vfprintf(stderr, str, ap);
   va_end(ap);
   return 1;
 }
@@ -19,7 +19,7 @@ int main(int argc, char** argv) {
 
   FILE* f = fopen(argv[1], "rb");
 
-  if (!f) return err("couldn’t open file %s\n", argv[1]);
+  if (!f) return err("couldn’t open file %s.\n", argv[1]);
 
   fseek(f, 0, SEEK_END);
   long fsize = ftell(f);

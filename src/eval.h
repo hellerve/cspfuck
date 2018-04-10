@@ -3,7 +3,7 @@
 
 #include "parser.h"
 
-void eval(bytecode*);
+void* eval(void*);
 void eval_actors(actors*);
 
 #endif

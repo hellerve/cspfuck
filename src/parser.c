@@ -94,22 +94,25 @@ actors* parse(char* inpt) {
 
       case '\n':
         if (*(++inpt) == '\n') {
-          build_op(HALT, 0);
-          ac->code = realloc(ac->code, sizeof(bytecode*)*(++ac->num));
-          ac->code[ac->num-1] = res;
-          res = NULL;
+          if (res) {
+            build_op(HALT, 0);
+            ac->code = realloc(ac->code, sizeof(bytecode*)*(++ac->num));
+            ac->code[ac->num-1] = res;
+            res = NULL;
+          }
           idx = 0;
           str = inpt;
-        } else if (*inpt == '\0') goto break_sw;
+        } else if (*inpt == '\0') continue;
         break;
     }
     inpt++;
   }
 
-break_sw:
-  build_op(HALT, 0);
-  ac->code = realloc(ac->code, sizeof(bytecode*)*(++ac->num));
-  ac->code[ac->num-1] = res;
+  if (res) {
+    build_op(HALT, 0);
+    ac->code = realloc(ac->code, sizeof(bytecode*)*(++ac->num));
+    ac->code[ac->num-1] = res;
+  }
 
   return ac;
 #undef build_op
