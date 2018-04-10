@@ -35,7 +35,7 @@ That’s all that Brainfuck is.
 
 - `^`: Send the value currently under the tape head to the actor above.
 - `v`: Send the value currently under the tape head to the actor below.
-- `u`: Receive a value, write it into the cell currently unter de tape head.
+- `u`: Receive a value, write it into the cell currently unter the tape head.
 
 And that’s all `cspfuck` is.
 
@@ -53,8 +53,12 @@ a newline to make it pretty.
 
 Actors are implemented as pthreads. The virtual machine is a simple bytecode
 VM that offers 30,000 elements to each Brainfuck program (it will actually
-overflow if you go past that, oops). It should be reasonably performant, but
-who cares? I hope noone’s going to run their MapReduce jobs on it.
+overflow if you go past that, oops).
+
+It should be reasonably performant, but who cares? I hope noone’s going to run
+their MapReduce jobs on it. There are some low-hanging fruits for optimization,
+like making the VM loop use direct threaded code, but I chose not to for now.
+Feel free to hack on it you want to! I’m happy to help you get started.
 
 It’s only about 300 lines of C, so it should be reasonably consumable. The
 code isn’t necessarily pretty, but it seems to work well. It is not incredibly
