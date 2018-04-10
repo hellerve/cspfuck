@@ -64,6 +64,10 @@ It’s only about 300 lines of C, so it should be reasonably consumable. The
 code isn’t necessarily pretty, but it seems to work well. It is not incredibly
 battle-tested, though.
 
+**Disclaimer**: I know approximate as much about concurrent programming in C as
+I know about writing production-grade Brainfuck. The system should be expected
+to be brittle.
+
 <hr/>
 
 Have fun!
