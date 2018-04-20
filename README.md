@@ -35,7 +35,7 @@ That’s all that Brainfuck is.
 
 - `^`: Send the value currently under the tape head to the actor above.
 - `v`: Send the value currently under the tape head to the actor below.
-- `u`: Receive a value, write it into the cell currently unter the tape head.
+- `u`: Receive a value, write it into the cell currently under the tape head.
 
 And that’s all `cspfuck` is.
 
