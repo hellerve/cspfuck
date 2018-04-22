@@ -60,6 +60,9 @@ their MapReduce jobs on it. There are some low-hanging fruits for optimization,
 like making the VM loop use direct threaded code, but I chose not to for now.
 Feel free to hack on it you want to! I’m happy to help you get started.
 
+The VM does seem to execute [ridiculous programs](http://www.clifford.at/bfcpu/hanoi.html)
+in standard Brainfuck pretty efficiently, which makes me unreasonably happy.
+
 It’s only about 300 lines of C, so it should be reasonably consumable. The
 code isn’t necessarily pretty, but it seems to work well. It is not incredibly
 battle-tested, though.
