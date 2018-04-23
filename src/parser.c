@@ -45,6 +45,34 @@ int getmatchfwd(char* str, char* begin) {
   return str-begin;
 }
 
+char* remove_comments(char* inpt) {
+  char* str = inpt;
+  int ln = strlen(inpt);
+
+  while (*str != '\0') {
+    switch (*str) {
+      case '+':
+      case '-':
+      case '>':
+      case '<':
+      case '.':
+      case ',':
+      case '[':
+      case ']':
+      case '^':
+      case 'v':
+      case 'u':
+      case '\n':
+        break;
+      default:
+        memmove(str, str+1, ln-(str-inpt));
+    }
+    str++;
+  }
+
+  return inpt;
+}
+
 actors* parse(char* inpt) {
 #define build_op(c, a) {\
   res = realloc(res, sizeof(bytecode)*(++idx));\
@@ -56,6 +84,7 @@ actors* parse(char* inpt) {
   ac->num = 0;
   ac->code = NULL;
   bytecode* res = NULL;
+  inpt = remove_comments(inpt);
 
   while (*inpt != '\0') {
     switch (*inpt) {
