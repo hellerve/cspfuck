@@ -67,6 +67,8 @@ It’s only about 300 lines of C, so it should be reasonably consumable. The
 code isn’t necessarily pretty, but it seems to work well. It is not incredibly
 battle-tested, though.
 
+If you want to know more, read [my blog post](http://blog.veitheller.de/Brainfuck_and_Actors.html)!
+
 **Disclaimer**: I know approximately as much about concurrent programming in C as
 I know about writing production-grade Brainfuck. The system should be expected
 to be brittle.
