@@ -10,6 +10,7 @@ int getmatchbck(char* str, char* end) {
 
   for (int i = 0; i < 256; i++) last_depth[i] = 0;
 
+  str--;
   while (str++ < end) {
     switch(*str) {
       case '[':
