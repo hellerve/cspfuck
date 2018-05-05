@@ -65,7 +65,7 @@ char* remove_comments(char* inpt) {
       case 'u':
         break;
       case '\n':
-        if (*(str+1) == '\n') break;
+        if (*(str+1) == '\n') { str++; break; }
       default:
         memmove(str, str+1, ln-(str-inpt));
     }
