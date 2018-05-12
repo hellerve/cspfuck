@@ -104,7 +104,7 @@ actors* parse(char* inpt) {
           return NULL;
         }
 
-        build_op(STARTL, matching_end);
+        build_op(STARTL, matching_end-1);
         break;
       }
       case ']': {

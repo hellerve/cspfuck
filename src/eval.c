@@ -5,6 +5,8 @@
 
 #include "eval.h"
 
+#define TAPE_LEN 30000
+
 typedef struct {
   int* up;
   int* up_written;
@@ -16,10 +18,10 @@ typedef struct {
 void* eval(void* arg) {
   int i = 0;
   int h = 0;
-  int t[30000];
+  int t[TAPE_LEN];
   actor_ctx* ctx = (actor_ctx*) arg;
 
-  for (int idx = 0; idx < 30000; idx++) t[idx] = 0;
+  for (int idx = 0; idx < TAPE_LEN; idx++) t[idx] = 0;
 
   while(1) {
     bytecode c = ctx->code[i++];
