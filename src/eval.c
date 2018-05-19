@@ -18,7 +18,7 @@ typedef struct {
 void* eval(void* arg) {
   int i = 0;
   int h = 0;
-  int t[TAPE_LEN];
+  unsigned int t[TAPE_LEN];
   actor_ctx* ctx = (actor_ctx*) arg;
 
   for (int idx = 0; idx < TAPE_LEN; idx++) t[idx] = 0;
@@ -26,6 +26,7 @@ void* eval(void* arg) {
   while(1) {
     bytecode c = ctx->code[i++];
     switch (c.code) {
+      case ZERO: t[h] = 0; break;
       case INC: t[h]++; break;
       case DEC: t[h]--; break;
       case FWD: h++; break;

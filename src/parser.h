@@ -10,6 +10,7 @@ enum BYTECODES {
   READ,
   STARTL,
   ENDL,
+  ZERO,
 
   SEND,
   RECV,

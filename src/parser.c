@@ -97,6 +97,12 @@ actors* parse(char* inpt) {
       case '.': build_op(PRN, 0); break;
       case ',': build_op(READ, 0); break;
       case '[': {
+        if (strlen(inpt)>2 && (*(inpt+1)=='-' || *(inpt+1)=='+') && *(inpt+2)==']') {
+          inpt += 2;
+          build_op(ZERO, 0);
+          continue;
+        }
+
         int matching_end = getmatchfwd(inpt+1, str);
         if (matching_end < 0) {
           free_actors(ac);
