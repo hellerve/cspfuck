@@ -36,8 +36,6 @@ int main(int argc, char** argv) {
 
   if (!ac) return err("parentheses don't match.\n");
 
-  //print_actors(ac);
-
   eval_actors(ac);
 
   free_actors(ac);

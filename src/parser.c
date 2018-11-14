@@ -75,6 +75,23 @@ char* remove_comments(char* inpt) {
   return inpt;
 }
 
+#include <stdio.h>
+
+char* optimize_zero(char* inpt) {
+  char* str = inpt;
+  int ln = strlen(inpt);
+
+  while (*str != '\0') {
+    if ((!strncmp(str, "[+]", 3))||(!strncmp(str, "[-]", 3))) {
+      memmove(str, str+2, ln-(str-inpt));
+      *str = '0';
+    }
+    str++;
+  }
+
+  return inpt;
+}
+
 actors* parse(char* inpt) {
 #define build_op(c, a) {\
   res = realloc(res, sizeof(bytecode)*(++idx));\
@@ -87,6 +104,7 @@ actors* parse(char* inpt) {
   ac->code = NULL;
   bytecode* res = NULL;
   inpt = remove_comments(inpt);
+  inpt = optimize_zero(inpt);
 
   while (*inpt != '\0') {
     switch (*inpt) {
@@ -96,13 +114,8 @@ actors* parse(char* inpt) {
       case '<': build_op(BCK, 0); break;
       case '.': build_op(PRN, 0); break;
       case ',': build_op(READ, 0); break;
+      case '0': build_op(ZERO, 0); break;
       case '[': {
-        if (strlen(inpt)>2 && (*(inpt+1)=='-' || *(inpt+1)=='+') && *(inpt+2)==']') {
-          inpt += 2;
-          build_op(ZERO, 0);
-          continue;
-        }
-
         int matching_end = getmatchfwd(inpt+1, str);
         if (matching_end < 0) {
           free_actors(ac);
@@ -110,7 +123,7 @@ actors* parse(char* inpt) {
           return NULL;
         }
 
-        build_op(STARTL, matching_end-1);
+        build_op(STARTL, matching_end);
         break;
       }
       case ']': {
@@ -121,7 +134,7 @@ actors* parse(char* inpt) {
           return NULL;
         }
 
-        build_op(ENDL, matching_begin);
+        build_op(ENDL, matching_begin+1);
         break;
       }
 
@@ -138,7 +151,7 @@ actors* parse(char* inpt) {
             res = NULL;
           }
           idx = 0;
-          str = inpt;
+          str = inpt+1;
         } else if (*inpt == '\0') continue;
         break;
     }

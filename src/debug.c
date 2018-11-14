@@ -15,6 +15,7 @@ void print_bytecode(bytecode* code) {
       case FWD: print(i, "fwd", indent); break;
       case BCK: print(i, "bck", indent); break;
       case PRN: print(i, "prn", indent); break;
+      case ZERO: print(i, "zero", indent); break;
       case READ: print(i, "read", indent); break;
       case STARTL: print_arg(i, "start loop", c.arg, indent); indent += 2; break;
       case ENDL: indent -= 2; print_arg(i, "end loop", c.arg, indent); break;
@@ -34,5 +35,35 @@ void print_actors(actors* ac) {
     printf("Bytecode for Actor %d:\n=====================\n", i);
     print_bytecode(ac->code[i]);
     printf("=====================\n");
+  }
+}
+
+void print_bytecode_src(bytecode* code) {
+  int i = 0;
+  while(1) {
+    bytecode c = code[i++];
+    switch (c.code) {
+      case INC: printf("+"); break;
+      case DEC: printf("-"); break;
+      case FWD: printf(">"); break;
+      case BCK: printf("<"); break;
+      case PRN: printf("."); break;
+      case ZERO: printf("0"); break;
+      case READ: printf(","); break;
+      case STARTL: printf("["); break;
+      case ENDL: printf("]"); break;
+
+      case SEND: if(c.arg) printf("^"); else printf("v"); break;
+      case RECV: printf("u"); break;
+
+      case HALT: return;
+    }
+  }
+}
+
+void print_src(actors* ac) {
+  for (int i = 0; i < ac->num; i++) {
+    print_bytecode_src(ac->code[i]);
+    printf("\n\n");
   }
 }

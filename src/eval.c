@@ -8,6 +8,7 @@
 #define TAPE_LEN 30000
 
 typedef struct {
+  int num;
   int* up;
   int* up_written;
   int* down;
@@ -20,17 +21,18 @@ void* eval(void* arg) {
   int h = 0;
   unsigned int t[TAPE_LEN];
   actor_ctx* ctx = (actor_ctx*) arg;
+  bytecode c;
 
   for (int idx = 0; idx < TAPE_LEN; idx++) t[idx] = 0;
 
   while(1) {
-    bytecode c = ctx->code[i++];
+    c = ctx->code[i++];
     switch (c.code) {
       case ZERO: t[h] = 0; break;
       case INC: t[h]++; break;
       case DEC: t[h]--; break;
-      case FWD: h++; break;
-      case BCK: h--; break;
+      case FWD: h++;/*h = h < TAPE_LEN-1 ? h+1 : 0;*/ break;
+      case BCK: h--;/*h = h > -1 ? h-1 : TAPE_LEN-1;*/ break;
       case PRN: printf("%c", t[h]); break;
       case READ: scanf("%c", (char*)&t[h]); break;
       case STARTL: if(!t[h]) i = c.arg; break;
@@ -81,6 +83,7 @@ void eval_actors(actors* ac) {
   int* down_written = NULL;
   for (i = 0; i < ac->num; i++) {
     actor_ctx ctx;
+    ctx.num = i;
     ctx.down = down;
     ctx.down_written = down_written;
     if (i < ac->num-1) {

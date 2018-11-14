@@ -3,7 +3,7 @@
 
 #include "parser.h"
 
-void print_bytecode(bytecode*);
 void print_actors(actors*);
+void print_src(actors*);
 
 #endif

@@ -3,7 +3,7 @@ BUILDDIR=bin/
 PREFIX=/usr/local/bin/
 SOURCES=$(wildcard src/*.c)
 MAIN=main.c
-override CFLAGS+=-Werror -Wall -g -fPIC -O2 -DNDEBUG -Wfloat-equal -Wundef -Wwrite-strings -Wuninitialized -pedantic -std=c11 -fsanitize=address
+override CFLAGS+=-Werror -Wall -g -fPIC -DNDEBUG -Wfloat-equal -Wundef -Wwrite-strings -Wuninitialized -pedantic -std=c11
 
 all: main.c
 	mkdir -p $(BUILDDIR)
