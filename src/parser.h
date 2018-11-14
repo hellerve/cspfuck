@@ -2,6 +2,7 @@
 #define parser_h
 
 enum BYTECODES {
+  ZERO = 0,
   INC,
   DEC,
   FWD,
@@ -10,7 +11,6 @@ enum BYTECODES {
   READ,
   STARTL,
   ENDL,
-  ZERO,
 
   SEND,
   RECV,

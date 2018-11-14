@@ -18,8 +18,8 @@ tape of—typically—30,000 elements, initially all set to 0.
 
 - `+`: Increment the value currently under the tape head.
 - `-`: Decrement the value currently under the tape head.
-- `>`: Advance the tape head.
-- `<`: Retreat the tape head.
+- `>`: Advance the tape head or wrap around.
+- `<`: Retreat the tape head or wrap around.
 - `.`: Print out the value currently under the tape head, interpreted as
        ASCII code.
 - `,`: Read a character into the cell currently under the tape head,
@@ -51,9 +51,9 @@ a newline to make it pretty.
 
 ## Implementation
 
-Actors are implemented as pthreads. The virtual machine is a simple bytecode
-VM that offers 30,000 elements to each Brainfuck program (it will actually
-overflow if you go past that, oops).
+Actors are implemented as pthreads. The virtual machine is a simple direct
+threaded bytecode VM that offers 30,000 elements to each Brainfuck program (it
+will wrap around if you go past the low or high threshold).
 
 It should be reasonably performant, but who cares? I hope noone’s going to run
 their MapReduce jobs on it. There are some low-hanging fruits for optimization,
@@ -63,15 +63,15 @@ Feel free to hack on it you want to! I’m happy to help you get started.
 The VM does seem to execute [ridiculous programs](http://www.clifford.at/bfcpu/hanoi.html)
 in standard Brainfuck pretty efficiently, which makes me unreasonably happy.
 
-It’s only about 300 lines of C, so it should be reasonably consumable. The
+It’s only about 350 lines of C, so it should be reasonably consumable. The
 code isn’t necessarily pretty, but it seems to work well. It is not incredibly
 battle-tested, though.
 
 If you want to know more, read [my blog post](http://blog.veitheller.de/Brainfuck_and_Actors.html)!
 
-**Disclaimer**: I know approximately as much about concurrent programming in C as
-I know about writing production-grade Brainfuck. The system should be expected
-to be brittle.
+**Disclaimer**: I know approximately as much about concurrent programming in C
+as I know about writing production-grade Brainfuck. The system should be
+expected to be brittle.
 
 <hr/>
 
