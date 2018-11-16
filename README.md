@@ -52,8 +52,11 @@ a newline to make it pretty.
 ## Implementation
 
 Actors are implemented as pthreads. The virtual machine is a simple direct
-threaded bytecode VM that offers 30,000 elements to each Brainfuck program (it
-will wrap around if you go past the low or high threshold).
+threaded bytecode VM that offers 30,000 elements to each Brainfuck program. It
+will wrap around if you go past the low or high threshold—this can be turned
+off by passing `-DNO_WRAP` to the compiler or calling `make no_wrap`, as
+disabling it might buy you a little bit of performance, depending on your
+workfload.
 
 It should be reasonably performant, but who cares? I hope noone’s going to run
 their MapReduce jobs on it. There are some low-hanging fruits for optimization,

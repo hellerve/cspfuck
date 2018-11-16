@@ -17,7 +17,7 @@ typedef struct {
 } actor_ctx;
 
 /*
-  We’re using direct threadin here. Basically, we avoid looping and case
+  We’re using direct threading here. Basically, we avoid looping and case
   dispatch by using a computed GOTO instead. This comes at the cost of using a
   GNU extension, but I love those anyway.
 */
@@ -39,8 +39,13 @@ void* eval(void* arg) {
 do_zero: t[h] = 0; DISPATCH();
 do_inc: t[h]++; DISPATCH();
 do_dec: t[h]--; DISPATCH();
-do_fwd: h = h < TAPE_LEN-1 ? h+1 : 0; DISPATCH();
-do_bck: h = h > -1 ? h-1 : TAPE_LEN-1; DISPATCH();
+#ifdef NO_WRAP
+do_fwd: h++; DISPATCH();
+do_bck: h--; DISPATCH();
+#else
+do_fwd: h = h+1 % TAPE_LEN; DISPATCH();
+do_bck: h = h-1 % TAPE_LEN; DISPATCH();
+#endif
 do_prn: printf("%c", t[h]); DISPATCH();
 do_read: scanf("%c", (char*)&t[h]); DISPATCH();
 do_startl: if(!t[h]) i = c.arg; DISPATCH();
@@ -103,10 +108,19 @@ void eval_actors(actors* ac) {
     }
     ctx.code = ac->code[i];
     ctxs[i] = ctx;
-    pthread_create(&ts[i], NULL, eval, &ctxs[i]);
+    if(ac->num == 1) {
+      // if we just have one thread, we eval it directly; buys us about 2% perf
+      eval(&ctx);
+      free(ctx.up);
+      free(ctx.up_written);
+      return;
+    } else {
+      pthread_create(&ts[i], NULL, eval, &ctxs[i]);
+    }
     down = ctx.up;
     down_written = ctx.up_written;
   }
+
   for (i = 0; i < ac->num; i++) {
     pthread_join(ts[i], NULL);
     actor_ctx ctx = ctxs[i];
