@@ -45,7 +45,7 @@ do_bck: h--; DISPATCH();
 #else
 // modulo would be prettier here, but slows the code down by A LOT; somehow
 // the C compilers can’t optimize uncoditional modulos here
-do_fwd: h = h > TAPE_LEN-1 ? 0 : h+1; DISPATCH();
+do_fwd: h = h == TAPE_LEN-1 ? 0 : h+1; DISPATCH();
 do_bck: h = h == 0 ? TAPE_LEN-1 : h-1; DISPATCH();
 #endif
 do_prn: printf("%c", t[h]); DISPATCH();
