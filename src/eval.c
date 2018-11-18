@@ -43,8 +43,10 @@ do_dec: t[h]--; DISPATCH();
 do_fwd: h++; DISPATCH();
 do_bck: h--; DISPATCH();
 #else
-do_fwd: h = h+1 % TAPE_LEN; DISPATCH();
-do_bck: h = h-1 % TAPE_LEN; DISPATCH();
+// modulo would be prettier here, but slows the code down by A LOT; somehow
+// the C compilers can’t optimize uncoditional modulos here
+do_fwd: h = h > TAPE_LEN-1 ? 0 : h+1; DISPATCH();
+do_bck: h = h == 0 ? TAPE_LEN-1 : h-1; DISPATCH();
 #endif
 do_prn: printf("%c", t[h]); DISPATCH();
 do_read: scanf("%c", (char*)&t[h]); DISPATCH();
