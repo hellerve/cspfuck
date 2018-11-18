@@ -24,7 +24,7 @@ typedef struct {
 void* eval(void* arg) {
 #define DISPATCH() { c = ctx->code[i++]; goto *dispatch_table[c.code]; }
   int i = 0;
-  int h = 0;
+  unsigned int h = 0;
   unsigned int t[TAPE_LEN];
   actor_ctx* ctx = (actor_ctx*) arg;
   bytecode c;
