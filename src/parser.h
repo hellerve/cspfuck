@@ -14,6 +14,10 @@ enum BYTECODES {
 
   SEND,
   RECV,
+
+  MOVE_PTR,
+  MOVE_DATA,
+
   HALT,
 };
 

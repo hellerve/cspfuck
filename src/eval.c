@@ -30,23 +30,24 @@ void* eval(void* arg) {
   bytecode c;
   static void* dispatch_table[] = {
     &&do_zero, &&do_inc, &&do_dec, &&do_fwd, &&do_bck, &&do_prn, &&do_read,
-    &&do_startl, &&do_endl, &&do_send, &&do_recv, &&do_halt
+    &&do_startl, &&do_endl, &&do_send, &&do_recv, &&do_move_ptr, &&do_move_data,
+    &&do_halt
   };
 
   for (int idx = 0; idx < TAPE_LEN; idx++) t[idx] = 0;
 
   DISPATCH();
 do_zero: t[h] = 0; DISPATCH();
-do_inc: t[h]++; DISPATCH();
-do_dec: t[h]--; DISPATCH();
+do_inc: t[h]+=c.arg; DISPATCH();
+do_dec: t[h]-=c.arg; DISPATCH();
 #ifdef NO_WRAP
-do_fwd: h++; DISPATCH();
-do_bck: h--; DISPATCH();
+do_fwd: h += c.arg; DISPATCH();
+do_bck: h -= c.arg; DISPATCH();
 #else
 // modulo would be prettier here, but slows the code down by A LOT; somehow
 // the C compilers can’t optimize uncoditional modulos here
-do_fwd: h = h == TAPE_LEN-1 ? 0 : h+1; DISPATCH();
-do_bck: h = h == 0 ? TAPE_LEN-1 : h-1; DISPATCH();
+do_fwd: h += c.arg; if (h >= TAPE_LEN-1) h %=TAPE_LEN; DISPATCH();
+do_bck: h -= c.arg; if (h < 0) h %= TAPE_LEN; DISPATCH();
 #endif
 do_prn: printf("%c", t[h]); DISPATCH();
 do_read: scanf("%c", (char*)&t[h]); DISPATCH();
@@ -81,6 +82,15 @@ do_recv:
   } else if (ctx->down_written && *ctx->down_written) {
     t[h] = *ctx->down;
     *ctx->down_written = 0;
+  }
+  DISPATCH();
+
+do_move_ptr: while (t[h]) h+=c.arg; DISPATCH();
+
+do_move_data:
+  if (t[h]) {
+    t[h+c.arg] += t[h];
+    t[h] = 0;
   }
   DISPATCH();
 
