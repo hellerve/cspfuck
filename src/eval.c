@@ -57,7 +57,10 @@ do_endl: if(t[h]) i = c.arg; DISPATCH();
 do_send:
   if (c.arg) {
     if (!ctx->up) {
-      fputs("Actor tried to write to non-existant up channel, ignoring.", stderr);
+      fprintf(stderr,
+        "Actor %d tried to write to non-existant up channel, ignoring.",
+        ctx->num
+      );
       DISPATCH();
     }
     *ctx->up = t[h];
@@ -65,7 +68,10 @@ do_send:
     DISPATCH();
   } else {
     if (!ctx->down) {
-      fputs("Actor tried to write to non-existant down channel, ignoring.", stderr);
+      fprintf(stderr,
+        "Actor %d tried to write to non-existant down channel, ignoring.",
+        ctx->num
+      );
       DISPATCH();
     }
     *ctx->down = t[h];
