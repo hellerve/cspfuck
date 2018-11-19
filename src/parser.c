@@ -89,7 +89,7 @@ actors* parse(char* inpt) {
   ac->code = NULL;
   bytecode* res = NULL;
   inpt = remove_comments(inpt);
-  inpt = optimize_zero(inpt);
+  //inpt = optimize_zero(inpt);
 
   while (*inpt != '\0') {
     switch (*inpt) {
@@ -114,16 +114,16 @@ actors* parse(char* inpt) {
         }
 
         build_op(ENDL, matching_begin+1);
-        int removed = optimize_loop(res, matching_begin+1, idx);
-        idx -= removed;
-        dup += removed;
-        res = realloc(res, sizeof(bytecode)*idx);
-        if (!removed) {
-          res[matching_begin].arg = idx;
-          if (res[matching_begin].code != STARTL && idx < 30) {
-            printf("wat: %d %d\n", matching_begin, idx);
-          }
-        }
+        //int removed = optimize_loop(res, matching_begin+1, idx);
+        //idx -= removed;
+        //dup += removed;
+        //res = realloc(res, sizeof(bytecode)*idx);
+        //if (!removed) {
+        //  res[matching_begin].arg = idx;
+        //  if (res[matching_begin].code != STARTL && idx < 30) {
+        //    printf("wat: %d %d\n", matching_begin, idx);
+        //  }
+        //}
         break;
       }
 
