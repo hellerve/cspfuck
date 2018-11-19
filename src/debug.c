@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "debug.h"
 
@@ -42,16 +43,30 @@ void print_actors(actors* ac) {
 }
 
 void print_bytecode_src(bytecode* code) {
+  #define print_times(s) { for (j = 0; j < c.arg; j++) printf(s); }
   int i = 0;
+  int j;
   while(1) {
     bytecode c = code[i++];
     switch (c.code) {
-      case INC: printf("+"); break;
-      case DEC: printf("-"); break;
-      case FWD: printf(">"); break;
-      case BCK: printf("<"); break;
+      case INC: print_times("+"); break;
+      case DEC: print_times("-"); break;
+      case FWD: print_times(">"); break;
+      case BCK: print_times("<"); break;
       case PRN: printf("."); break;
       case ZERO: printf("0"); break;
+      case MOVE_PTR:
+        printf("[");
+        for (j = 0; j < abs(c.arg); j++) printf(c.arg > 0 ? ">" : "<");
+        printf("]");
+        break;
+      case MOVE_DATA:
+        printf("[-");
+        for (int j = 0; j < abs(c.arg); j++) printf(c.arg > 0 ? ">" : "<");
+        printf("+");
+        for (int j = 0; j < abs(c.arg); j++) printf(c.arg > 0 ? "<" : ">");
+        printf("]");
+        break;
       case READ: printf(","); break;
       case STARTL: printf("["); break;
       case ENDL: printf("]"); break;
@@ -62,6 +77,7 @@ void print_bytecode_src(bytecode* code) {
       case HALT: return;
     }
   }
+  #undef print_times
 }
 
 void print_src(actors* ac) {

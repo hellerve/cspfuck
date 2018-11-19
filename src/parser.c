@@ -1,69 +1,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <stdio.h>
+
 #include "parser.h"
-
-int getmatchbck(char* str, char* end) {
-  int last_depth[256];
-  int cur_depth = 0;
-  int dup = 0;
-  char* start = str;
-
-  for (int i = 0; i < 256; i++) last_depth[i] = 0;
-
-  str--;
-  while (str++ < end) {
-    switch(*str) {
-      case '[':
-        last_depth[cur_depth++] = str-start-dup;
-        break;
-      case ']':
-        cur_depth--;
-        break;
-      case '>':
-      case '<':
-      case '+':
-      case '-': {
-        char c = *str;
-        while (*(++str)==c) dup++;
-        str--;
-        break;
-      }
-    }
-  }
-
-  if (cur_depth < 0) return -1;
-
-  return last_depth[cur_depth];
-}
-
-int getmatchfwd(char* str, char* begin, int dup) {
-  int cur_depth = 1;
-
-  while (cur_depth) {
-    switch(*str) {
-      case '[':
-        cur_depth++;
-        break;
-      case ']':
-        cur_depth--;
-        break;
-      case '>':
-      case '<':
-      case '+':
-      case '-': {
-        char c = *str;
-        while (*(++str)==c) dup++;
-        str--;
-        break;
-      }
-      case '\0': return -1;
-    }
-    str++;
-  }
-
-  return str-begin-dup;
-}
 
 char* remove_comments(char* inpt) {
   char* str = inpt;
@@ -109,30 +49,22 @@ char* optimize_zero(char* inpt) {
   return inpt;
 }
 
-#include <stdio.h>
-
 int optimize_loop(bytecode* s, int begin, int end) {
-  if (begin < 30) printf("eeeeeend: %d %d\n", begin, end);
   bytecode rep = s[begin];
   if (end-begin == 2 && (rep.code == FWD || rep.code == BCK)) {
     // [>] || [<] == MOVE_PTR
     int narg = rep.code == FWD ? rep.arg : -rep.arg;
     s[begin-1] = (bytecode){.code=MOVE_PTR, .arg=narg};
     return 2;
-  } else if (end-begin == 5 && rep.code == DEC && s[begin+3].code == INC &&
-             rep.arg == s[begin+3].arg == 1) {
+  } else if (end-begin == 5 && rep.code == DEC && s[begin+2].code == INC &&
+         rep.arg == s[begin+2].arg == 1 && s[begin+1].arg == s[begin+3].arg) {
     // [->+<] || [-<+>] == MOVE_DATA
-    if (s[begin+2].code == FWD && s[begin+4].code == BCK &&
-        s[begin+2].arg == s[begin+4].arg) {
-      s[begin+1] = (bytecode){.code=MOVE_DATA, .arg=s[begin+2].arg};
-      s[begin+2] = (bytecode){.code=ENDL, .arg=begin};
-      s = realloc(s, begin+3);
-      return 3;
-    } else if (s[begin+2].code == BCK && s[begin+4].code == FWD &&
-               s[begin+2].arg == s[begin+4].arg) {
-      s[begin+1] = (bytecode){.code=MOVE_DATA, .arg=-s[begin+2].arg};
-      s[begin+2] = (bytecode){.code=ENDL, .arg=begin};
-      return 3;
+    if (s[begin+1].code == FWD && s[begin+3].code == BCK) {
+      s[begin-1] = (bytecode){.code=MOVE_DATA, .arg=s[begin+1].arg};
+      return 5;
+    } else if (s[begin+1].code == BCK && s[begin+3].code == FWD) {
+      s[begin-1] = (bytecode){.code=MOVE_DATA, .arg=-s[begin+1].arg};
+      return 5;
     }
   }
   return 0;
@@ -149,8 +81,9 @@ actors* parse(char* inpt) {
 }
   int idx = 0;
   int dup = 0;
-  int elided = 0;
   char* str = inpt;
+  int loop_stack[256];
+  int loop_depth = 0;
   actors* ac = malloc(sizeof(actors));
   ac->num = 0;
   ac->code = NULL;
@@ -168,30 +101,29 @@ actors* parse(char* inpt) {
       case ',': build_op(READ, 0); break;
       case '0': build_cumulative_op(ZERO); break;
       case '[': {
-        int matching_end = getmatchfwd(inpt+1, str, dup);
-        if (matching_end < 0) {
-          free_actors(ac);
-          free(res);
-          return NULL;
-        }
-
-        build_op(STARTL, matching_end);
+        loop_stack[loop_depth++] = idx;
+        build_op(STARTL, 0);
         break;
       }
       case ']': {
-        int matching_begin = getmatchbck(str, inpt);
+        int matching_begin = loop_depth > 0 ? loop_stack[--loop_depth] : -1;
         if (matching_begin < 0) {
           free_actors(ac);
           free(res);
           return NULL;
         }
 
-        build_op(ENDL, matching_begin+1-elided);
-        //int removed = optimize_loop(res, matching_begin+1, idx+elided);
-        //idx -= removed;
-        //dup += removed;
-        //elided += removed;
-        //res = realloc(res, sizeof(bytecode)*idx);
+        build_op(ENDL, matching_begin+1);
+        int removed = optimize_loop(res, matching_begin+1, idx);
+        idx -= removed;
+        dup += removed;
+        res = realloc(res, sizeof(bytecode)*idx);
+        if (!removed) {
+          res[matching_begin].arg = idx;
+          if (res[matching_begin].code != STARTL && idx < 30) {
+            printf("wat: %d %d\n", matching_begin, idx);
+          }
+        }
         break;
       }
 

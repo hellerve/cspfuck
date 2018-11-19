@@ -66,7 +66,7 @@ Feel free to hack on it you want to! I’m happy to help you get started.
 The VM does seem to execute [ridiculous programs](http://www.clifford.at/bfcpu/hanoi.html)
 in standard Brainfuck pretty efficiently, which makes me unreasonably happy.
 
-It’s only about 350 lines of C, so it should be reasonably consumable. The
+It’s only about 400 lines of C, so it should be reasonably consumable. The
 code isn’t necessarily pretty, but it seems to work well. It is not incredibly
 battle-tested, though.
 
