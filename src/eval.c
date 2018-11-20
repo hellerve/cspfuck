@@ -152,8 +152,8 @@ void* jit(void* arg) {
   for (int idx = 0; idx < TAPE_LEN; idx++) t[idx] = 0;
 
   add(0x49);
-  add(0xBD);
-  add64((uint64_t)&t);
+  add(0xbd);
+  add64((uint64_t)t);
 
   while (1) {
     c = ctx->code[i++];
