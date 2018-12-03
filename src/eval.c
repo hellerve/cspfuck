@@ -120,8 +120,9 @@ void* jit(void* arg) {
         break;
       }
       case HALT:
-      default:
         goto jit_start;
+      default:
+        break;
     }
   }
 jit_start:
