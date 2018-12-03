@@ -39,8 +39,8 @@ void* eval(void* arg) {
 
   DISPATCH();
 do_zero: t[h] = 0; DISPATCH();
-do_inc: t[h]+=c.arg; DISPATCH();
-do_dec: t[h]-=c.arg; DISPATCH();
+do_inc: t[h] += c.arg; DISPATCH();
+do_dec: t[h] -= c.arg; DISPATCH();
 #ifdef NO_WRAP
 do_fwd: h += c.arg; DISPATCH();
 do_bck: h -= c.arg; DISPATCH();
