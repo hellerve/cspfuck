@@ -20,95 +20,6 @@ typedef struct {
   bytecode* code;
 } actor_ctx;
 
-/*
-  We’re using direct threading here. Basically, we avoid looping and case
-  dispatch by using a computed GOTO instead. This comes at the cost of using a
-  GNU extension, but I love those anyway.
-*/
-void* eval(void* arg) {
-#define DISPATCH() { c = ctx->code[i++]; goto *dispatch_table[c.code]; }
-  int i = 0;
-  unsigned int h = 0;
-  unsigned int t[TAPE_LEN];
-  actor_ctx* ctx = (actor_ctx*) arg;
-  bytecode c;
-  static void* dispatch_table[] = {
-    &&do_zero, &&do_inc, &&do_dec, &&do_fwd, &&do_bck, &&do_prn, &&do_read,
-    &&do_startl, &&do_endl, &&do_send, &&do_recv, &&do_move_ptr, &&do_move_data,
-    &&do_halt
-  };
-
-  for (int idx = 0; idx < TAPE_LEN; idx++) t[idx] = 0;
-
-  DISPATCH();
-do_zero: t[h] = 0; DISPATCH();
-do_inc: t[h]+=c.arg; DISPATCH();
-do_dec: t[h]-=c.arg; DISPATCH();
-#ifdef NO_WRAP
-do_fwd: h += c.arg; DISPATCH();
-do_bck: h -= c.arg; DISPATCH();
-#else
-// modulo would be prettier here, but slows the code down by A LOT; somehow
-// the C compilers can’t optimize uncoditional modulos here
-do_fwd: h += c.arg; if (h >= TAPE_LEN-1) h %=TAPE_LEN; DISPATCH();
-do_bck: h -= c.arg; if (h < 0) h %= TAPE_LEN; DISPATCH();
-#endif
-do_prn: printf("%c", t[h]); DISPATCH();
-do_read: scanf("%c", (char*)&t[h]); DISPATCH();
-do_startl: if(!t[h]) i = c.arg; DISPATCH();
-do_endl: if(t[h]) i = c.arg; DISPATCH();
-
-do_send:
-  if (c.arg) {
-    if (!ctx->up) {
-      fprintf(stderr,
-        "Actor %d tried to write to non-existant up channel, ignoring.",
-        ctx->num
-      );
-      DISPATCH();
-    }
-    *ctx->up = t[h];
-    *ctx->up_written = 1;
-    DISPATCH();
-  } else {
-    if (!ctx->down) {
-      fprintf(stderr,
-        "Actor %d tried to write to non-existant down channel, ignoring.",
-        ctx->num
-      );
-      DISPATCH();
-    }
-    *ctx->down = t[h];
-    *ctx->down_written = 1;
-    DISPATCH();
-  }
-
-do_recv:
-  while ((ctx->up_written && !(*ctx->up_written)) &&
-         (ctx->down_written && !(*ctx->down_written))) usleep(100);
-  if (ctx->up_written && *ctx->up_written) {
-    t[h] = *ctx->up;
-    *ctx->up_written = 0;
-  } else if (ctx->down_written && *ctx->down_written) {
-    t[h] = *ctx->down;
-    *ctx->down_written = 0;
-  }
-  DISPATCH();
-
-do_move_ptr: while (t[h]) h+=c.arg; DISPATCH();
-
-do_move_data:
-  if (t[h]) {
-    t[h+c.arg] += t[h];
-    t[h] = 0;
-  }
-  DISPATCH();
-
-do_halt:
-  return NULL;
-#undef DISPATCH
-}
-
 unsigned int relative_32bit_offset(int jump_frm, int jump_to) {
   if (jump_to >= jump_frm) return jump_to - jump_frm;
   else return ~((unsigned int)jump_frm-jump_to) + 1;
@@ -141,7 +52,7 @@ void* jit(void* arg) {
   add32((x >> 32) & 0xffffffff);\
 }
   int i = 0;
-  unsigned int t[TAPE_LEN];
+  unsigned short t[TAPE_LEN];
   actor_ctx* ctx = (actor_ctx*) arg;
   bytecode c;
   unsigned int syslen = 0;
