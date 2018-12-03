@@ -11,7 +11,7 @@ all: main.c
 	$(CC) $(MAIN) $(SOURCES) -o $(BUILDDIR)$(TARGET) $(CFLAGS)
 
 no_wrap: main.c
-	CFLAGS+=-DNO_WRAP make
+	CFLAGS=-DNO_WRAP make
 
 dev: main.c
 	mkdir -p $(BUILDDIR)
