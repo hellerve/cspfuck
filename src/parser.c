@@ -89,7 +89,7 @@ actors* parse(char* inpt) {
   ac->code = NULL;
   bytecode* res = NULL;
   inpt = remove_comments(inpt);
-  //inpt = optimize_zero(inpt);
+  inpt = optimize_zero(inpt);
 
   while (*inpt != '\0') {
     switch (*inpt) {

@@ -71,6 +71,7 @@ void* jit(void* arg) {
     switch (c.code) {
       case INC: add(0x41); add(0x80); add(0x45); add(0x00); add(c.arg); break;
       case DEC: add(0x41); add(0x80); add(0x6d); add(0x00); add(c.arg); break;
+      case ZERO: add(0x48); add(0x45); add(0x00); add(0x00); add(0x01); break;
       case FWD: add(0x41); add(0x80); add(0xC5); add(c.arg); break;
       case BCK: add(0x41); add(0x80); add(0xCD); add(c.arg); break;
       case PRN:
