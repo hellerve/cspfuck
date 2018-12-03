@@ -127,8 +127,8 @@ jit_start:
 
   f();
 
+  munmap(mem, syslen);
   free(sys);
-  free(mem);
 
   return NULL;
 #undef add
