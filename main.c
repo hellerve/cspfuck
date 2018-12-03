@@ -26,8 +26,10 @@ int main(int argc, char** argv) {
   fseek(f, 0, SEEK_SET);
 
   char *string = malloc(fsize + 1);
-  fread(string, fsize, 1, f);
+  int read = fread(string, 1, fsize, f);
   fclose(f);
+
+  if (read != fsize) return err("couldn’t read file %s.\n", argv[1]);
 
   string[fsize] = 0;
 

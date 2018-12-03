@@ -57,7 +57,8 @@ int optimize_loop(bytecode* s, int begin, int end) {
     s[begin-1] = (bytecode){.code=MOVE_PTR, .arg=narg};
     return 2;
   } else if (end-begin == 5 && rep.code == DEC && s[begin+2].code == INC &&
-         rep.arg == s[begin+2].arg == 1 && s[begin+1].arg == s[begin+3].arg) {
+         rep.arg == s[begin+2].arg && rep.arg == 1 &&
+         s[begin+1].arg == s[begin+3].arg) {
     // [->+<] || [-<+>] == MOVE_DATA
     if (s[begin+1].code == FWD && s[begin+3].code == BCK) {
       s[begin-1] = (bytecode){.code=MOVE_DATA, .arg=s[begin+1].arg};
