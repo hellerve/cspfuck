@@ -125,19 +125,19 @@ void* jit(void* arg) {
   sys[syslen-1] = x;\
 }
 #define add32_at(x, i) {\
-  add_at(x & 0xff, i);\
-  add_at((x >> 8) & 0xff, i+1);\
-  add_at((x >> 16) & 0xff, i+2);\
-  add_at((x >> 24) & 0xff, i+3);\
+  add_at((x) & 0xff, i);\
+  add_at(((x) >> 8) & 0xff, i+1);\
+  add_at(((x) >> 16) & 0xff, i+2);\
+  add_at(((x) >> 24) & 0xff, i+3);\
 }
 #define add32(x) {\
   add(x & 0xff);\
-  add((x >> 8) & 0xff);\
-  add((x >> 16) & 0xff);\
-  add((x >> 24) & 0xff);\
+  add(((x) >> 8) & 0xff);\
+  add(((x) >> 16) & 0xff);\
+  add(((x) >> 24) & 0xff);\
 }
 #define add64(x) {\
-  add32(x & 0xffffffff);\
+  add32((x) & 0xffffffff);\
   add32((x >> 32) & 0xffffffff);\
 }
   int i = 0;
@@ -153,15 +153,15 @@ void* jit(void* arg) {
 
   add(0x49);
   add(0xbd);
-  add64((uint64_t)t);
+  add64((uint64_t)&t);
 
   while (1) {
     c = ctx->code[i++];
     switch (c.code) {
-      case INC: add(0x41); add(0x80); add(0x45); add(0x00); add(0x01); break;
-      case DEC: add(0x41); add(0x80); add(0x6d); add(0x00); add(0x01); break;
-      case FWD: add(0x49); add(0xff); add(0xc5); break;
-      case BCK: add(0x49); add(0xff); add(0xcd); break;
+      case INC: add(0x41); add(0x80); add(0x45); add(0x00); add(c.arg); break;
+      case DEC: add(0x41); add(0x80); add(0x6d); add(0x00); add(c.arg); break;
+      case FWD: add(0x41); add(0x80); add(0xC5); add(c.arg); break;
+      case BCK: add(0x41); add(0x80); add(0xCD); add(c.arg); break;
       case PRN:
         add(0x48); add(0xc7); add(0xc0); add(0x01); add(0x00); add(0x00); add(0x00);
         add(0x48); add(0xc7); add(0xc7); add(0x01); add(0x00); add(0x00); add(0x00);
@@ -193,8 +193,8 @@ void* jit(void* arg) {
         add(0x0F); add(0x85);
         add32(pcrel_offset);
 
-        jmp_to = begin + 6;
-        jmp_frm = syslen;
+        jmp_frm = begin + 6;
+        jmp_to = syslen;
         pcrel_offset = relative_32bit_offset(jmp_frm, jmp_to);
         add32_at(pcrel_offset, begin+2);
         break;
