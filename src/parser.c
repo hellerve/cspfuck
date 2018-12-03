@@ -82,7 +82,6 @@ actors* parse(char* inpt) {
 }
   int idx = 0;
   int dup = 0;
-  char* str = inpt;
   int loop_stack[256];
   int loop_depth = 0;
   actors* ac = malloc(sizeof(actors));
@@ -141,7 +140,6 @@ actors* parse(char* inpt) {
             res = NULL;
           }
           idx = 0;
-          str = inpt+1;
         } else if (*inpt == '\0') continue;
         break;
     }
