@@ -5,5 +5,6 @@
 
 void print_actors(actors*);
 void print_src(actors*);
+void print_faux_assembly(long, actors*);
 
 #endif

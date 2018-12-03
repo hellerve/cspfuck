@@ -1,8 +1,10 @@
 #define _DEFAULT_SOURCE
+#include <assert.h>
 #include <pthread.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <sys/mman.h>
 #include <unistd.h>
@@ -20,9 +22,17 @@ typedef struct {
   bytecode* code;
 } actor_ctx;
 
-unsigned int relative_32bit_offset(int jump_frm, int jump_to) {
-  if (jump_to >= jump_frm) return jump_to - jump_frm;
-  else return ~((unsigned int)jump_frm-jump_to) + 1;
+uint32_t relative_32bit_offset(uint32_t jump_frm, uint32_t jump_to) {
+  if (jump_to >= jump_frm) {
+    size_t diff = jump_to - jump_frm;
+    assert(diff < (1ull << 31));
+    return diff;
+  } else {
+    size_t diff = jump_frm - jump_to;
+    assert(diff-1 < (1ull << 31));
+    uint32_t diff_unsigned = (uint32_t)diff;
+    return ~diff_unsigned + 1;
+  }
 }
 
 typedef void (*jit_fn)(void);
@@ -52,12 +62,12 @@ void* jit(void* arg) {
   add32((x >> 32) & 0xffffffff);\
 }
   int i = 0;
-  unsigned short t[TAPE_LEN];
+  uint8_t t[TAPE_LEN];
   actor_ctx* ctx = (actor_ctx*) arg;
   bytecode c;
-  unsigned int syslen = 0;
-  unsigned char* sys = NULL;
-  int loop_stack[256];
+  size_t syslen = 0;
+  uint8_t* sys = NULL;
+  size_t loop_stack[2048];
   int loop_depth = 0;
 
   for (int idx = 0; idx < TAPE_LEN; idx++) t[idx] = 0;
@@ -103,12 +113,12 @@ void* jit(void* arg) {
         add(0x0f); add(0x84); add32(0);
         break;
       case ENDL: {
-        int begin = loop_stack[--loop_depth];
+        size_t begin = loop_stack[--loop_depth];
         add(0x41); add(0x80); add(0x7d); add(0x00); add(0x00);
 
-        int jmp_frm = syslen + 6;
-        int jmp_to = begin + 6;
-        int pcrel_offset = relative_32bit_offset(jmp_frm, jmp_to);
+        size_t jmp_frm = syslen + 6;
+        size_t jmp_to = begin + 6;
+        uint32_t pcrel_offset = relative_32bit_offset(jmp_frm, jmp_to);
 
         add(0x0f); add(0x85);
         add32(pcrel_offset);
