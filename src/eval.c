@@ -82,8 +82,8 @@ void* jit(void* arg) {
       case INC: add(0x41); add(0x80); add(0x45); add(0x00); add(c.arg); break;
       case DEC: add(0x41); add(0x80); add(0x6d); add(0x00); add(c.arg); break;
       case ZERO: add(0x41); add(0xc6); add(0x45); add(0x00); add(0x00); break;
-      case FWD: add(0x41); add(0x80); add(0xc5); add(c.arg); break;
-      case BCK: add(0x41); add(0x80); add(0xed); add(c.arg); break;
+      case FWD: add(0x49); add(0x83); add(0xc5); add(c.arg); break;
+      case BCK: add(0x49); add(0x83); add(0xed); add(c.arg); break;
       case PRN:
 #ifdef __APPLE__
         add(0x48); add(0xc7); add(0xc0); add(0x04); add(0x00); add(0x00); add(0x02);
