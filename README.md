@@ -4,6 +4,8 @@
 actor that is effectively a Brainfuck program with added primitives for
 receiving from and sending to other actors.
 
+This is the JIT version.
+
 ## Usage
 
 You can build the program through its Makefile by typing `make`. This will leave
@@ -43,34 +45,20 @@ And that’s all that `cspfuck` is.
 
 I’m a terrible Brainfuck programmer, so I only provide one proof-of-concept
 example for now. It is contained in a directory named
-`example/`—appropriately singular—, in which I provide a hello world program.
-It is three actors, printing hello world concurrently. At the end of the
-program, the first actor goes back to the cell containing `d`, and sends it
-to the actor below, which will receive it into a new cell, print it, and print
-a newline to make it pretty.
+`example/`—appropriately singular—, in which I provide a ping pong program.
+It contains two actors, one printing ping, then waiting for the other, the
+other waiting, and then printing pong, ten times.
 
 ## Implementation
 
-Actors are implemented as pthreads. The virtual machine is a simple direct
-threaded bytecode VM that offers 30,000 elements to each Brainfuck program. It
-will wrap around if you go past the low or high threshold—this can be turned
-off by passing `-DNO_WRAP` to the compiler or calling `make no_wrap`, as
-disabling it might buy you a little bit of performance, depending on your
-workfload.
+Actors are implemented as pthreads. The virtual machine is a simple handrolled
+JIT that offers 30,000 elements to each Brainfuck program. It will segfault if
+you go past the low or high threshold. This version is about four times faster
+than the bytecode VM provided in the [`master`](https://github.com/hellerve/cspfuck/tree/master) branch.
 
-It should be reasonably performant, but who cares? I hope noone’s going to run
-their MapReduce jobs on it. There are some low-hanging fruits for optimization,
-like making the VM loop use direct threaded code, but I chose not to for now.
-Feel free to hack on it you want to! I’m happy to help you get started.
-
-The VM does seem to execute [ridiculous programs](http://www.clifford.at/bfcpu/hanoi.html)
-in standard Brainfuck pretty efficiently, which makes me unreasonably happy.
-
-It’s only about 400 lines of C, so it should be reasonably consumable. The
+It’s only about 550 lines of C, so it should be reasonably consumable. The
 code isn’t necessarily pretty, but it seems to work well. It is not incredibly
 battle-tested, though.
-
-If you want to know more, read [my blog post](http://blog.veitheller.de/Brainfuck_and_Actors.html)!
 
 **Disclaimer**: I know approximately as much about concurrent programming in C
 as I know about writing production-grade Brainfuck. The system should be
