@@ -43,11 +43,9 @@ And that’s all that `cspfuck` is.
 
 I’m a terrible Brainfuck programmer, so I only provide one proof-of-concept
 example for now. It is contained in a directory named
-`example/`—appropriately singular—, in which I provide a hello world program.
-It is three actors, printing hello world concurrently. At the end of the
-program, the first actor goes back to the cell containing `d`, and sends it
-to the actor below, which will receive it into a new cell, print it, and print
-a newline to make it pretty.
+`example/`—appropriately singular—, in which I provide a ping pong program. It
+contains two actors, one printing ping, then waiting for the other, the other
+waiting, and then printing pong, ten times.
 
 ## Implementation
 
@@ -59,14 +57,13 @@ disabling it might buy you a little bit of performance, depending on your
 workfload.
 
 It should be reasonably performant, but who cares? I hope noone’s going to run
-their MapReduce jobs on it. There are some low-hanging fruits for optimization,
-like making the VM loop use direct threaded code, but I chose not to for now.
+their MapReduce jobs on it. There are some low-hanging fruits for optimization.
 Feel free to hack on it you want to! I’m happy to help you get started.
 
 The VM does seem to execute [ridiculous programs](http://www.clifford.at/bfcpu/hanoi.html)
 in standard Brainfuck pretty efficiently, which makes me unreasonably happy.
 
-It’s only about 400 lines of C, so it should be reasonably consumable. The
+It’s only about 450 lines of C, so it should be reasonably consumable. The
 code isn’t necessarily pretty, but it seems to work well. It is not incredibly
 battle-tested, though.
 

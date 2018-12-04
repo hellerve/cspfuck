@@ -10,10 +10,14 @@
 
 typedef struct {
   int num;
-  int* up;
-  int* up_written;
-  int* down;
-  int* down_written;
+  int* up_in;
+  int* up_written_in;
+  int* up_out;
+  int* up_written_out;
+  int* down_in;
+  int* down_written_in;
+  int* down_out;
+  int* down_written_out;
   bytecode* code;
 } actor_ctx;
 
@@ -57,38 +61,38 @@ do_endl: if(t[h]) i = c.arg; DISPATCH();
 
 do_send:
   if (c.arg) {
-    if (!ctx->up) {
+    if (!ctx->up_out) {
       fprintf(stderr,
         "Actor %d tried to write to non-existant up channel, ignoring.",
         ctx->num
       );
       DISPATCH();
     }
-    *ctx->up = t[h];
-    *ctx->up_written = 1;
+    *ctx->up_out = t[h];
+    *ctx->up_written_out = 1;
     DISPATCH();
   } else {
-    if (!ctx->down) {
+    if (!ctx->down_out) {
       fprintf(stderr,
         "Actor %d tried to write to non-existant down channel, ignoring.",
         ctx->num
       );
       DISPATCH();
     }
-    *ctx->down = t[h];
-    *ctx->down_written = 1;
+    *ctx->down_out = t[h];
+    *ctx->down_written_out = 1;
     DISPATCH();
   }
 
 do_recv:
-  while ((ctx->up_written && !(*ctx->up_written)) &&
-         (ctx->down_written && !(*ctx->down_written))) usleep(100);
-  if (ctx->up_written && *ctx->up_written) {
-    t[h] = *ctx->up;
-    *ctx->up_written = 0;
-  } else if (ctx->down_written && *ctx->down_written) {
-    t[h] = *ctx->down;
-    *ctx->down_written = 0;
+  while ((!ctx->up_written_in || !(*ctx->up_written_in)) &&
+         (!ctx->down_written_in || !(*ctx->down_written_in))) usleep(100);
+  if (ctx->up_written_in && *ctx->up_written_in) {
+    t[h] = *ctx->up_in;
+    *ctx->up_written_in = 0;
+  } else if (ctx->down_written_in && *ctx->down_written_in) {
+    t[h] = *ctx->down_in;
+    *ctx->down_written_in = 0;
   }
   DISPATCH();
 
@@ -110,39 +114,54 @@ void eval_actors(actors* ac) {
   int i;
   pthread_t ts[ac->num];
   actor_ctx ctxs[ac->num];
-  int* down = NULL;
-  int* down_written = NULL;
+  int* down_in = NULL;
+  int* down_written_in = NULL;
+  int* down_out = NULL;
+  int* down_written_out = NULL;
   for (i = 0; i < ac->num; i++) {
     actor_ctx ctx;
     ctx.num = i;
-    ctx.down = down;
-    ctx.down_written = down_written;
+    ctx.down_in = down_in;
+    ctx.down_written_in = down_written_in;
+    ctx.down_out = down_out;
+    ctx.down_written_out = down_written_out;
     if (i < ac->num-1) {
-      ctx.up = malloc(sizeof(int));
-      ctx.up_written = malloc(sizeof(int));
-      *ctx.up_written = 0;
+      ctx.up_in = malloc(sizeof(int));
+      ctx.up_written_in = malloc(sizeof(int));
+      *ctx.up_written_in = 0;
+      ctx.up_out = malloc(sizeof(int));
+      ctx.up_written_out = malloc(sizeof(int));
+      *ctx.up_written_out = 0;
     } else {
-      ctx.up = NULL;
-      ctx.up_written = NULL;
+      ctx.up_in = NULL;
+      ctx.up_written_in = NULL;
+      ctx.up_out = NULL;
+      ctx.up_written_out = NULL;
     }
     ctx.code = ac->code[i];
     ctxs[i] = ctx;
     if(ac->num == 1) {
       // if we just have one thread, we eval it directly; buys us about 2% perf
       eval(&ctx);
-      free(ctx.up);
-      free(ctx.up_written);
+      free(ctx.up_in);
+      free(ctx.up_written_in);
+      free(ctx.up_out);
+      free(ctx.up_written_out);
       return;
     } else {
       pthread_create(&ts[i], NULL, eval, &ctxs[i]);
     }
-    down = ctx.up;
-    down_written = ctx.up_written;
+    down_in = ctx.up_out;
+    down_written_in = ctx.up_written_out;
+    down_out = ctx.up_in;
+    down_written_out = ctx.up_written_in;
   }
 
   for (i = 0; i < ac->num; i++) {
     pthread_join(ts[i], NULL);
+  }
+  for (i = 0; i < ac->num; i++) {
     actor_ctx ctx = ctxs[i];
-    if (ctx.up) { free(ctx.up); free(ctx.up_written); }
+    if (ctx.up_in) { free(ctx.up_in); free(ctx.up_written_in); free(ctx.up_out); free(ctx.up_written_out); }
   }
 }
