@@ -49,28 +49,6 @@ char* optimize_zero(char* inpt) {
   return inpt;
 }
 
-int optimize_loop(bytecode* s, int begin, int end) {
-  bytecode rep = s[begin];
-  if (end-begin == 2 && (rep.code == FWD || rep.code == BCK)) {
-    // [>] || [<] == MOVE_PTR
-    int narg = rep.code == FWD ? rep.arg : -rep.arg;
-    s[begin-1] = (bytecode){.code=MOVE_PTR, .arg=narg};
-    return 2;
-  } else if (end-begin == 5 && rep.code == DEC && s[begin+2].code == INC &&
-         rep.arg == s[begin+2].arg && rep.arg == 1 &&
-         s[begin+1].arg == s[begin+3].arg) {
-    // [->+<] || [-<+>] == MOVE_DATA
-    if (s[begin+1].code == FWD && s[begin+3].code == BCK) {
-      s[begin-1] = (bytecode){.code=MOVE_DATA, .arg=s[begin+1].arg};
-      return 5;
-    } else if (s[begin+1].code == BCK && s[begin+3].code == FWD) {
-      s[begin-1] = (bytecode){.code=MOVE_DATA, .arg=-s[begin+1].arg};
-      return 5;
-    }
-  }
-  return 0;
-}
-
 actors* parse(char* inpt) {
 #define build_op(c, a) {\
   res = realloc(res, sizeof(bytecode)*(++idx));\
@@ -114,16 +92,6 @@ actors* parse(char* inpt) {
         }
 
         build_op(ENDL, matching_begin+1);
-        //int removed = optimize_loop(res, matching_begin+1, idx);
-        //idx -= removed;
-        //dup += removed;
-        //res = realloc(res, sizeof(bytecode)*idx);
-        //if (!removed) {
-        //  res[matching_begin].arg = idx;
-        //  if (res[matching_begin].code != STARTL && idx < 30) {
-        //    printf("wat: %d %d\n", matching_begin, idx);
-        //  }
-        //}
         break;
       }
 

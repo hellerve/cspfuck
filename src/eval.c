@@ -15,12 +15,52 @@
 
 typedef struct {
   int num;
-  int* up;
-  int* up_written;
-  int* down;
-  int* down_written;
+  int* up_in;
+  int* up_written_in;
+  int* up_out;
+  int* up_written_out;
+  int* down_in;
+  int* down_written_in;
+  int* down_out;
+  int* down_written_out;
   bytecode* code;
 } actor_ctx;
+
+void recv(actor_ctx* ctx, int* cl) {
+  while ((!ctx->up_written_in || !(*ctx->up_written_in)) &&
+         (!ctx->down_written_in || !(*ctx->down_written_in))) usleep(100);
+  if (ctx->up_written_in && *ctx->up_written_in) {
+    *cl = *ctx->up_in;
+    *ctx->up_written_in = 0;
+  } else if (ctx->down_written_in && *ctx->down_written_in) {
+    *cl = *ctx->down_in;
+    *ctx->down_written_in = 0;
+  }
+}
+
+void send_down(actor_ctx* ctx, int* cl) {
+  if (!ctx->down_out) {
+    fprintf(stderr,
+      "Actor %d tried to write to non-existant down channel, ignoring.",
+      ctx->num
+    );
+    return;
+  }
+  *ctx->down_out = *cl;
+  *ctx->down_written_out = 1;
+}
+
+void send_up(actor_ctx* ctx, int* cl) {
+  if (!ctx->up_out) {
+    fprintf(stderr,
+      "Actor %d tried to write to non-existant up channel, ignoring.",
+      ctx->num
+    );
+    return;
+  }
+  *ctx->up_out = *cl;
+  *ctx->up_written_out = 1;
+}
 
 uint32_t relative_32bit_offset(uint32_t jump_frm, uint32_t jump_to) {
   if (jump_to >= jump_frm) {
@@ -52,14 +92,14 @@ void* jit(void* arg) {
   add_at(((x) >> 24) & 0xff, i+3);\
 }
 #define add32(x) {\
-  add(x & 0xff);\
+  add((x) & 0xff);\
   add(((x) >> 8) & 0xff);\
   add(((x) >> 16) & 0xff);\
   add(((x) >> 24) & 0xff);\
 }
 #define add64(x) {\
   add32((x) & 0xffffffff);\
-  add32((x >> 32) & 0xffffffff);\
+  add32(((x) >> 32) & 0xffffffff);\
 }
   int i = 0;
   uint8_t t[TAPE_LEN];
@@ -129,6 +169,23 @@ void* jit(void* arg) {
         add32_at(pcrel_offset, begin+2);
         break;
       }
+      case RECV: {
+        add(0x55);
+        add(0x4c); add(0x89); add(0xee);
+        add(0x48); add(0xbf); add64((uint64_t)ctx);
+        add(0x49); add(0xbe); add64((uint64_t)recv);
+        add(0x41); add(0xff); add(0xd6);
+        add(0x5d);
+        break;
+      }
+      case SEND: {
+        add(0x55);
+        add(0x48); add(0xbf); add64((uint64_t)ctx);
+        add(0x49); add(0xbe); add64((uint64_t)(c.arg ? send_up : send_down));
+        add(0x41); add(0xff); add(0xd6);
+        add(0x5d);
+        break;
+      }
       case HALT:
         goto jit_start;
       default:
@@ -147,7 +204,7 @@ jit_start:
   f();
 
   munmap(mem, syslen);
-  free(sys);
+  //free(sys);
 
   return NULL;
 #undef add
@@ -160,39 +217,54 @@ void eval_actors(actors* ac) {
   int i;
   pthread_t ts[ac->num];
   actor_ctx ctxs[ac->num];
-  int* down = NULL;
-  int* down_written = NULL;
+  int* down_in = NULL;
+  int* down_written_in = NULL;
+  int* down_out = NULL;
+  int* down_written_out = NULL;
   for (i = 0; i < ac->num; i++) {
     actor_ctx ctx;
     ctx.num = i;
-    ctx.down = down;
-    ctx.down_written = down_written;
+    ctx.down_in = down_in;
+    ctx.down_written_in = down_written_in;
+    ctx.down_out = down_out;
+    ctx.down_written_out = down_written_out;
     if (i < ac->num-1) {
-      ctx.up = malloc(sizeof(int));
-      ctx.up_written = malloc(sizeof(int));
-      *ctx.up_written = 0;
+      ctx.up_in = malloc(sizeof(int));
+      ctx.up_written_in = malloc(sizeof(int));
+      *ctx.up_written_in = 0;
+      ctx.up_out = malloc(sizeof(int));
+      ctx.up_written_out = malloc(sizeof(int));
+      *ctx.up_written_out = 0;
     } else {
-      ctx.up = NULL;
-      ctx.up_written = NULL;
+      ctx.up_in = NULL;
+      ctx.up_written_in = NULL;
+      ctx.up_out = NULL;
+      ctx.up_written_out = NULL;
     }
     ctx.code = ac->code[i];
     ctxs[i] = ctx;
     if(ac->num == 1) {
       // if we just have one thread, we eval it directly; buys us about 2% perf
       jit(&ctx);
-      free(ctx.up);
-      free(ctx.up_written);
+      free(ctx.up_in);
+      free(ctx.up_written_in);
+      free(ctx.up_out);
+      free(ctx.up_written_out);
       return;
     } else {
       pthread_create(&ts[i], NULL, jit, &ctxs[i]);
     }
-    down = ctx.up;
-    down_written = ctx.up_written;
+    down_in = ctx.up_out;
+    down_written_in = ctx.up_written_out;
+    down_out = ctx.up_in;
+    down_written_out = ctx.up_written_in;
   }
 
   for (i = 0; i < ac->num; i++) {
     pthread_join(ts[i], NULL);
+  }
+  for (i = 0; i < ac->num; i++) {
     actor_ctx ctx = ctxs[i];
-    if (ctx.up) { free(ctx.up); free(ctx.up_written); }
+    if (ctx.up_in) { free(ctx.up_in); free(ctx.up_written_in); free(ctx.up_out); free(ctx.up_written_out); }
   }
 }

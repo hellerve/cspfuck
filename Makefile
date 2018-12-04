@@ -3,7 +3,7 @@ BUILDDIR=bin/
 PREFIX=/usr/local/bin/
 SOURCES=$(wildcard src/*.c)
 MAIN=main.c
-override CFLAGS+=-std=c11 -O2 -Wno-gnu -lpthread
+override CFLAGS+=-std=c11 -O2 -g -Wno-gnu -lpthread
 DEVFLAGS=-Werror -Wall -g -fPIC -DNDEBUG -Wfloat-equal -Wundef -Wwrite-strings -Wuninitialized -pedantic -O0
 
 all: main.c
