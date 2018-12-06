@@ -4,6 +4,8 @@
 actor that is effectively a Brainfuck program with added primitives for
 receiving from and sending to other actors.
 
+If you need more speed, check out the [JITed version](https://github.com/hellerve/cspfuck/tree/jit)!
+
 ## Usage
 
 You can build the program through its Makefile by typing `make`. This will leave
@@ -58,7 +60,9 @@ workfload.
 
 It should be reasonably performant, but who cares? I hope noone’s going to run
 their MapReduce jobs on it. There are some low-hanging fruits for optimization.
-Feel free to hack on it you want to! I’m happy to help you get started.
+Feel free to hack on it you want to! I’m happy to help you get started. If you
+do need more speed, I recently wrote a [JITed
+version](https://github.com/hellerve/cspfuck/tree/jit)!
 
 The VM does seem to execute [ridiculous programs](http://www.clifford.at/bfcpu/hanoi.html)
 in standard Brainfuck pretty efficiently, which makes me unreasonably happy.
