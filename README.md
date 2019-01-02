@@ -4,7 +4,8 @@
 actor that is effectively a Brainfuck program with added primitives for
 receiving from and sending to other actors.
 
-This is the JIT version.
+This is the JIT version. Read [my write-up](https://blog.veitheller.de/Speeding_up_an_Interpreter.html)
+about it.
 
 ## Usage
 
